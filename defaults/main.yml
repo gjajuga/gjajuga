@@ -1,0 +1,109 @@
+---
+
+oracle_groups:
+  - { group: oinstall, gid: 54321 }
+  - { group: dba, gid: 54322 }
+  - { group: backupdba, gid: 54323 }
+  - { group: oper, gid: 54324 }
+  - { group: dgdba, gid: 54325 }
+  - { group: kmdba, gid: 54326 }
+
+configure_users: True
+
+oracle_users:   # Default Passwd :Oracle123
+   - username: oracle
+     uid: 54321
+     primgroup: oinstall
+     othergroups: "dba,asmdba,backupdba,dgdba,kmdba,oper"
+     passwd: "$6$0xHoAXXF$K75HKb64Hcb/CEcr3YEj2LGERi/U2moJgsCK.ztGxLsKoaXc4UBiNZPL0hlxB5ng6GL.gyipfQOOXplzcdgvD0"
+
+role_separation: false
+oracle_user: oracle                        # User that will own the Oracle Installations.
+configure_oracle_sudo: true
+
+oracle_user_home: "/home/{{ oracle_user }}" # Home directory for oracle_user. Needed for passing in ssh-keys, profiles etc
+oracle_group: oinstall                          # Primary group for oracle_user.
+oper_group: oper
+dba_group: dba
+
+epel_rpm: "http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+repo_dir: /etc/yum.repos.d/
+
+disable_numa_boot: true                    # (true/false) Sets numa=off in grub.conf
+percent_hugepages: 50                      # Percentage (0-100) of total RAM to dedicate to hugepages, Configures vm.nr_hugepages & memlock settings
+configure_kernel: false
+configure_hugepages: false
+
+oracle_rsp_stage: "{{ oracle_stage_base }}/rsp"
+install_os_packages: true
+disable_selinux: true
+
+oracle_packages:
+  - libselinux-python
+  - procps
+  - module-init-tools
+  - ethtool
+  - bc
+  - bind-utils
+  - nfs-utils
+  - util-linux-ng
+  - xorg-x11-utils
+  - xorg-x11-xauth
+  - binutils
+  - compat-libstdc++-33
+  - gcc
+  - gcc-c++
+  - glibc
+  - glibc-devel
+  - glibc-devel.i686
+  - libaio
+  - libaio-devel
+  - libgcc
+  - libstdc++
+  - libstdc++-devel
+  - make
+  - sysstat
+  - openssh-clients
+  - compat-libcap1
+  - twm
+  # - kmod-oracleasm
+  # - "{{ asmlib_rpm }}"
+  # - oracleasm-support
+  - xorg-x11-xauth
+  - xorg-x11-xinit
+  - libXtst
+  - xdpyinfo
+  - xterm
+  - xsetroot
+  - libXp
+  - libXt
+  - libXtst
+  - ntp
+  - ksh
+  - lvm2
+  - xfsprogs
+  - btrfs-progs
+  - parted
+  - unzip
+
+oracle_sysconfig:
+  - { name: kernel.shmall, value: 4294967296 }
+  - { name: kernel.shmmax, value: 68719476736 }
+  - { name: kernel.shmmni, value: 4096 }
+  - { name: kernel.sem, value: "250 32000 100 128" }
+  - { name: fs.file-max, value: 6815744 }
+  - { name: fs.aio-max-nr, value: 1048576 }
+  - { name: net.ipv4.ip_local_port_range, value: "9000 65500" }
+  - { name: net.core.rmem_default, value: 262144 }
+  - { name: net.core.rmem_max, value: 4194304 }
+  - { name: net.core.wmem_default, value: 262144 }
+  - { name: net.core.wmem_max, value: 1048576 }
+  - { name: vm.nr_hugepages, value: "{{ (((percent_hugepages/100) * ansible_memtotal_mb)/2)|round|int  }}" }
+
+oracle_seclimits:
+  - "* soft nproc 2047"
+  - "* hard nproc 16384"
+  - "* soft nofile 4096"
+  - "* hard nofile 65536"
+  - "* soft memlock {{ ((0.9 * ansible_memtotal_mb)*1024)|round|int }} "
+  - "* hard memlock {{ ((0.9 * ansible_memtotal_mb)*1024)|round|int }}"
