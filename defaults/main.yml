@@ -1,5 +1,14 @@
 ---
 
+configure_users: true
+configure_oracle_sudo: true
+disable_numa_boot: true              # (true/false) Sets numa=off in grub.conf
+install_os_packages: true
+disable_selinux: true
+configure_kernel: true
+configure_hugepages: true
+percent_hugepages: 50                # Percentage (0-100) of total RAM to dedicate to hugepages, Configures vm.nr_hugepages & memlock settings
+
 oracle_groups:
   - { group: oinstall, gid: 54321 }
   - { group: dba, gid: 54322 }
@@ -8,19 +17,14 @@ oracle_groups:
   - { group: dgdba, gid: 54325 }
   - { group: kmdba, gid: 54326 }
 
-configure_users: True
-
 oracle_users:   # Default Passwd :Oracle123
    - username: oracle
      uid: 54321
      primgroup: oinstall
-     othergroups: "dba,asmdba,backupdba,dgdba,kmdba,oper"
+     othergroups: "dba,backupdba,dgdba,kmdba,oper"
      passwd: "$6$0xHoAXXF$K75HKb64Hcb/CEcr3YEj2LGERi/U2moJgsCK.ztGxLsKoaXc4UBiNZPL0hlxB5ng6GL.gyipfQOOXplzcdgvD0"
 
-role_separation: false
 oracle_user: oracle                        # User that will own the Oracle Installations.
-configure_oracle_sudo: true
-
 oracle_user_home: "/home/{{ oracle_user }}" # Home directory for oracle_user. Needed for passing in ssh-keys, profiles etc
 oracle_group: oinstall                          # Primary group for oracle_user.
 oper_group: oper
@@ -29,14 +33,7 @@ dba_group: dba
 epel_rpm: "http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm"
 repo_dir: /etc/yum.repos.d/
 
-disable_numa_boot: true                    # (true/false) Sets numa=off in grub.conf
-percent_hugepages: 50                      # Percentage (0-100) of total RAM to dedicate to hugepages, Configures vm.nr_hugepages & memlock settings
-configure_kernel: false
-configure_hugepages: false
-
 oracle_rsp_stage: "{{ oracle_stage_base }}/rsp"
-install_os_packages: true
-disable_selinux: true
 
 oracle_packages:
   - libselinux-python
