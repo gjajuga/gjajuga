@@ -9,6 +9,8 @@ configure_kernel: true
 configure_hugepages: true
 percent_hugepages: 50                # Percentage (0-100) of total RAM to dedicate to hugepages, Configures vm.nr_hugepages & memlock settings
 
+oracle_stage_base: /home/oracle/ansible_stage
+
 oracle_groups:
   - { group: oinstall, gid: 54321 }
   - { group: dba, gid: 54322 }
