@@ -10,7 +10,6 @@
     selinux: state=disabled
     when: "{{ disable_selinux }}"
     tags: selinux
-    register: selinux
 
   - name: Disable selinux (runtime)
     shell: setenforce 0
@@ -18,7 +17,7 @@
     tags: selinux
     ignore_errors: true
 
-  - name: User | Add group(s)
+  - name: Add User group(s)
     group:
       name: "{{ item.group }}"
       gid: "{{ item.gid }}"
@@ -28,7 +27,7 @@
     tags:
      - group
 
-  - name: User | Add Oracle user
+  - name: Add Oracle user
     user:
       name: "{{ item.username }}"
       group: "{{ item.primgroup }}"
@@ -44,7 +43,7 @@
     tags:
      - user
 
-  - name: User | Check Oracle user home permissions
+  - name: Check Oracle user home permissions
     file:
       path: /home/oracle
       owner: "{{ oracle_user }}"
@@ -53,7 +52,7 @@
       state: directory
     when: "{{ configure_users }}"
 
-  - name: User | Add Oracle user to sudoers
+  - name: Add Oracle user to sudoers
     template:
       src: sudoers.j2
       dest: "/etc/sudoers.d/{{ item.username }}"
