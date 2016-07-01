@@ -2,19 +2,19 @@
 
   - name: Install packages required by Oracle
     yum: name={{ item }} state=installed
-    with_items: oracle_packages
-    when: install_os_packages
+    with_items: "{{ oracle_packages }}"
+    when: "{{ install_os_packages }}"
     tags: os_packages
 
   - name: Disable selinux (permanently)
     selinux: state=disabled
-    when: disable_selinux
+    when: "{{ disable_selinux }}"
     tags: selinux
     register: selinux
 
   - name: Disable selinux (runtime)
     shell: setenforce 0
-    when: disable_selinux
+    when: "{{ disable_selinux }}"
     tags: selinux
     ignore_errors: true
 
@@ -23,8 +23,8 @@
       name: "{{ item.group }}"
       gid: "{{ item.gid }}"
       state: present
-    with_items: oracle_groups
-    when: configure_users
+    with_items: "{{ oracle_groups }}"
+    when: "{{ configure_users }}"
     tags:
      - group
 
@@ -39,8 +39,8 @@
       state: present
       password: "{{ item.passwd }}"
       home: "{{ oracle_user_home }}"
-    with_items: oracle_users
-    when: configure_users
+    with_items: "{{ oracle_users }}"
+    when: "{{ configure_users }}"
     tags:
      - user
 
@@ -51,7 +51,7 @@
       group: "{{ oracle_group }}"
       mode: 0700
       state: directory
-    when: configure_users
+    when: "{{ configure_users }}"
 
   - name: User | Add Oracle user to sudoers
     template:
@@ -59,8 +59,8 @@
       dest: "/etc/sudoers.d/{{ item.username }}"
       owner: root
       mode: 0600
-    with_items: oracle_users
-    when: configure_oracle_sudo
+    with_items: "{{ oracle_users }}"
+    when: "{{ configure_oracle_sudo }}"
     tags:
      - sudoadd
 
@@ -71,8 +71,8 @@
       state: present
       reload: yes
       ignoreerrors: yes
-    with_items: oracle_sysconfig
-    when: configure_kernel
+    with_items: "{{ oracle_sysconfig }}"
+    when: "{{ configure_kernel }}"
     tags: sysconfig
 
   - name: Oracle-recommended PAM config
@@ -80,7 +80,7 @@
       dest: /etc/pam.d/login
       state: present
       line: "session required pam_limits.so"
-    when: configure_kernel
+    when: "{{ configure_kernel }}"
     tags: pamconfig
 
   - name: Oracle-recommended security limits
@@ -88,14 +88,14 @@
       dest: /etc/security/limits.conf
       state: present
       line: "{{ item }}"
-    with_items: oracle_seclimits
-    when: configure_kernel
+    with_items: "{{ oracle_seclimits }}"
+    when: "{{ configure_kernel }}"
     tags: seclimit
 
   - name: Count number of kernel lines that needs to be changed (numa=off transparent_hugepage=never)
     shell: cat /etc/grub.conf | grep title |wc -l
     register: count
-    when: configure_kernel
+    when: "{{ configure_kernel }}"
     tags: thpnuma
 
   - name: Disable Transparent Hugepages (in grub.conf)
@@ -107,7 +107,7 @@
       regexp: '(^\s+kernel(\s+(?!transparent_hugepage=never)[\w=/\-\.]+)*)\s*$'
       line: '\1 transparent_hugepage=never'
     with_sequence: start=0 end={{ count.stdout|default(0) }}
-    when: configure_hugepages
+    when: "{{ configure_hugepages }}"
     tags: thpnuma
 
   - name: Disable Numa (in grub.conf)
@@ -119,12 +119,12 @@
       regexp: '(^\s+kernel(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$'
       line: '\1 numa=off'
     with_sequence: start=0 end={{ count.stdout|default(0) }}
+    when: "{{ disable_numa_boot }}"
     tags: thpnuma
-    when: disable_numa_boot
 
   - name: Disable Transparent Hugepages (runtime)
     shell: if test -f /sys/kernel/mm/transparent_hugepage/enabled; then echo never > /sys/kernel/mm/transparent_hugepage/enabled; fi;
-    when: configure_hugepages
+    when: "{{ configure_hugepages }}"
     tags: tphnuma
 
   - name: Create stage directory
