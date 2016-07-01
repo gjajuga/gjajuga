@@ -3,22 +3,15 @@ ansible-oracle-host
 
 This will configure the host specific Oracle stuff.  Currently single instance only.
 
-Add a user & group
-Create directory structures
-Install required packages
-Change kernel paramemeters
-Set up pam.d/limits config
-Disables transparent hugepages
-Disables NUMA (if needed)
+* Add a user & group
+* Create directory structures
+* Install required packages
+* Change kernel paramemeters
+* Set up pam.d/limits config
+* Disables transparent hugepages
+* Disables NUMA (if needed)
 
-Based on oravirt/ansible-oracle (https://github.com/oravirt/ansible-oracle)
-
-Role Variables
---------------
-
-
-Dependencies
-------------
+Based on [oravirt/ansible-oracle](https://github.com/oravirt/ansible-oracle)
 
 
 Example Playbook
@@ -29,4 +22,4 @@ Including an example of how to use your role (for instance, with variables passe
     - hosts: servers
       roles:
         - role: common
-        - role: orahost
+        - role: ansible-oracle-host
