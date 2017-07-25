@@ -6,14 +6,15 @@
     when: "{{ install_os_packages }}"
     tags: os_packages
 
-  - name: Disable selinux (permanently)
-    selinux: state=disabled
-    when: "{{ disable_selinux }}"
+  - name: Set selinux to Permissive
+    selinux:
+      policy: targeted
+      state: permissive
     tags: selinux
     register: selinux
 
-  - name: Disable selinux (runtime)
-    shell: setenforce 0
+  - name: Set selinux to Permissive (runtime)
+    shell: setenforce Permissive
     when: "{{ disable_selinux }}"
     tags: selinux
     ignore_errors: true
@@ -60,7 +61,6 @@
       owner: root
       mode: 0600
     with_items: "{{ oracle_users }}"
-    when: "{{ configure_oracle_sudo }}"
     tags:
      - sudoadd
 
