@@ -6,18 +6,20 @@
     when: "{{ install_os_packages }}"
     tags: os_packages
 
-  - name: Disable selinux (permanently)
-    selinux: state=disabled
-    when: "{{ disable_selinux }}"
+  - name: Set selinux to Permissive
+    selinux:
+      policy: targeted
+      state: permissive
     tags: selinux
+    register: selinux
 
-  - name: Disable selinux (runtime)
-    shell: setenforce 0
+  - name: Set selinux to Permissive (runtime)
+    shell: setenforce Permissive
     when: "{{ disable_selinux }}"
     tags: selinux
     ignore_errors: true
 
-  - name: Add User group(s)
+  - name: User | Add group(s)
     group:
       name: "{{ item.group }}"
       gid: "{{ item.gid }}"
@@ -27,7 +29,7 @@
     tags:
      - group
 
-  - name: Add Oracle user
+  - name: User | Add Oracle user
     user:
       name: "{{ item.username }}"
       group: "{{ item.primgroup }}"
@@ -43,7 +45,7 @@
     tags:
      - user
 
-  - name: Check Oracle user home permissions
+  - name: User | Check Oracle user home permissions
     file:
       path: /home/oracle
       owner: "{{ oracle_user }}"
@@ -52,14 +54,13 @@
       state: directory
     when: "{{ configure_users }}"
 
-  - name: Add Oracle user to sudoers
+  - name: User | Add Oracle user to sudoers
     template:
       src: sudoers.j2
       dest: "/etc/sudoers.d/{{ item.username }}"
       owner: root
       mode: 0600
     with_items: "{{ oracle_users }}"
-    when: "{{ configure_oracle_sudo }}"
     tags:
      - sudoadd
 
@@ -118,8 +119,8 @@
       regexp: '(^\s+kernel(\s+(?!numa=off)[\w=/\-\.]+)*)\s*$'
       line: '\1 numa=off'
     with_sequence: start=0 end={{ count.stdout|default(0) }}
-    when: "{{ disable_numa_boot }}"
     tags: thpnuma
+    when: "{{ disable_numa_boot }}"
 
   - name: Disable Transparent Hugepages (runtime)
     shell: if test -f /sys/kernel/mm/transparent_hugepage/enabled; then echo never > /sys/kernel/mm/transparent_hugepage/enabled; fi;
