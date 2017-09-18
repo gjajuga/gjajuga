@@ -13,17 +13,11 @@ oracle_stage_base: /home/oracle/ansible_stage
 
 oracle_groups:
   - { group: oinstall, gid: 54321 }
-  - { group: dba, gid: 54322 }
-  - { group: backupdba, gid: 54323 }
-  - { group: oper, gid: 54324 }
-  - { group: dgdba, gid: 54325 }
-  - { group: kmdba, gid: 54326 }
 
 oracle_users:   # Default Passwd :Oracle123
    - username: oracle
      uid: 54321
      primgroup: oinstall
-     othergroups: "dba,backupdba,dgdba,kmdba,oper"
      passwd: "$6$0xHoAXXF$K75HKb64Hcb/CEcr3YEj2LGERi/U2moJgsCK.ztGxLsKoaXc4UBiNZPL0hlxB5ng6GL.gyipfQOOXplzcdgvD0"
 
 oracle_user: oracle                        # User that will own the Oracle Installations.
@@ -64,7 +58,7 @@ oracle_packages:
   - sysstat
   - openssh-clients
   - compat-libcap1
-  - twm
+  # - twm  http://houseofbrick.com/twm-window-manager-on-rhel-7/
   # - kmod-oracleasm
   # - "{{ asmlib_rpm }}"
   # - oracleasm-support
@@ -84,6 +78,7 @@ oracle_packages:
   - btrfs-progs
   - parted
   - unzip
+  - psmisc
 
 oracle_sysconfig:
   - { name: kernel.shmall, value: 4294967296 }

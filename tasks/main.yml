@@ -19,50 +19,52 @@
     tags: selinux
     ignore_errors: true
 
-  - name: User | Add group(s)
-    group:
-      name: "{{ item.group }}"
-      gid: "{{ item.gid }}"
-      state: present
-    with_items: "{{ oracle_groups }}"
-    when: "{{ configure_users }}"
-    tags:
-     - group
+  # users, group and permissions already created by sysadmins
+  - block:
+      - name: User | Add group(s)
+        group:
+          name: "{{ item.group }}"
+          gid: "{{ item.gid }}"
+          state: present
+        with_items: "{{ oracle_groups }}"
+        when: "{{ configure_users }}"
+        tags:
+         - group
 
-  - name: User | Add Oracle user
-    user:
-      name: "{{ item.username }}"
-      group: "{{ item.primgroup }}"
-      groups: "{{ item.othergroups }}"
-      uid: "{{ item.uid }}"
-      generate_ssh_key: yes
-      append: yes
-      state: present
-      password: "{{ item.passwd }}"
-      home: "{{ oracle_user_home }}"
-    with_items: "{{ oracle_users }}"
-    when: "{{ configure_users }}"
-    tags:
-     - user
+      - name: User | Add Oracle user
+        user:
+          name: "{{ item.username }}"
+          group: "{{ item.primgroup }}"
+          uid: "{{ item.uid }}"
+          generate_ssh_key: yes
+          append: yes
+          state: present
+          password: "{{ item.passwd }}"
+          home: "{{ oracle_user_home }}"
+        with_items: "{{ oracle_users }}"
+        when: "{{ configure_users }}"
+        tags:
+         - user
 
-  - name: User | Check Oracle user home permissions
-    file:
-      path: /home/oracle
-      owner: "{{ oracle_user }}"
-      group: "{{ oracle_group }}"
-      mode: 0700
-      state: directory
-    when: "{{ configure_users }}"
+      - name: User | Check Oracle user home permissions
+        file:
+          path: /home/oracle
+          owner: "{{ oracle_user }}"
+          group: "{{ oracle_group }}"
+          mode: 0700
+          state: directory
+        when: "{{ configure_users }}"
 
-  - name: User | Add Oracle user to sudoers
-    template:
-      src: sudoers.j2
-      dest: "/etc/sudoers.d/{{ item.username }}"
-      owner: root
-      mode: 0600
-    with_items: "{{ oracle_users }}"
-    tags:
-     - sudoadd
+      - name: User | Add Oracle user to sudoers
+        template:
+          src: sudoers.j2
+          dest: "/etc/sudoers.d/{{ item.username }}"
+          owner: root
+          mode: 0600
+        with_items: "{{ oracle_users }}"
+        tags:
+         - sudoadd
+    when: is_vagrant_host is defined
 
   - name: Oracle-recommended kernel settings
     sysctl:
@@ -100,7 +102,7 @@
 
   - name: Disable Transparent Hugepages (in grub.conf)
     lineinfile:
-      dest: /etc/grub.conf
+      dest: /etc/grub2.cfg  # needs to be switched to /etc/grub2.cfg for rhel7
       backup: True
       backrefs: True
       state: present
@@ -112,7 +114,7 @@
 
   - name: Disable Numa (in grub.conf)
     lineinfile:
-      dest: /etc/grub.conf
+      dest: /etc/grub2.cfg
       backup: True
       backrefs: True
       state: present
